@@ -1,0 +1,73 @@
+scalar DateTime
+
+type PageInfo {
+    totalPages: Int!
+    totalElements: Int!
+    isFirst: Boolean!
+    isLast: Boolean!
+    current: Int!
+}
+
+type ArticlePageableResult {
+    pageInfo: PageInfo!
+    content: [Article!]
+}
+
+interface Entity {
+    id: ID!
+}
+
+type Tag implements Entity{
+    id: ID!
+    name: String!
+}
+
+type Author {
+    id: ID!
+    firstName: String!
+    lastName: String!
+}
+
+type Comment implements Entity {
+    id: ID!
+    author: Author!
+    text: String!
+    created: DateTime!
+    updated: DateTime!
+}
+
+type Article implements Entity {
+    id: ID!
+    title: String!
+    brief: String
+    text: String
+    author: Author!
+    tags: [Tag!]
+    comments(size: Int = 10, offset: Int = 0): [Comment!]
+    commentsCount: Int!
+    created: DateTime!
+    updated: DateTime!
+}
+
+type Query {
+    articles(size: Int = 10, offset: Int = 0): ArticlePageableResult!
+    article(id: ID!): Article
+    tags(limit: Int = 10, search: String, excludeTags: [String!]): [Tag!]
+    comments(size: Int = 10, offset: Int = 0, articleId: ID!): [Comment!]
+}
+
+input ArticleInput {
+    title: String!
+    brief: String
+    text: String
+    tags: [String!]
+}
+
+type Mutation {
+    createArticle(input: ArticleInput): Article!
+    updateArticle(id: ID!, input: ArticleInput): Article!
+    deleteArticle(id: ID!): Boolean
+    createComment(text: String, articleId: ID!): Comment!
+    updateComment(id: ID!, text: String): Comment!
+    deleteComment(id: ID!): Boolean
+}

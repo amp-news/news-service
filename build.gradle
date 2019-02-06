@@ -1,0 +1,97 @@
+buildscript {
+    ext {
+        kotlinVersion = '1.2.60'
+        springBootVersion = '2.0.1.RELEASE'
+        sonarVersion = '2.6.1'
+    }
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
+        classpath("org.jetbrains.kotlin:kotlin-noarg:${kotlinVersion}")
+        classpath("org.sonarsource.scanner.gradle:sonarqube-gradle-plugin:${sonarVersion}")
+    }
+}
+
+plugins {
+    id "io.gitlab.arturbosch.detekt" version "1.0.0.RC6-4"
+}
+
+detekt {
+    version = "1.0.0.RC6-4"
+    defaultProfile {
+        input = file("src/main/kotlin")
+        filters = ".*/resources/.*,.*/build/.*"
+        output = file("reports")
+        outputName = "detekt-report"
+        baseline = "$project.projectDir/reports/baseline.xml"
+    }
+}
+
+apply plugin: 'kotlin'
+apply plugin: 'kotlin-spring'
+apply plugin: "kotlin-jpa"
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'com.amp'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+apply plugin: "org.sonarqube"
+
+sonarqube {
+    androidVariant 'debug'
+
+    properties {
+        property "sonar.verbose", true
+        property "sonar.host.url", "http://localhost:8090"
+
+        property "sonar.issuesReport.html.enable", "true"
+        property "sonar.issuesReport.console.enable", "true"
+
+        property "detekt.sonar.kotlin.config.path", "${rootProject.projectDir}/default-detekt-config.yml"
+
+        property "sonar.sources", "src/main/kotlin"
+        property "sonar.tests", "src/test/kotlin"
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-data-jpa')
+    compile group: 'org.springframework.security', name: 'spring-security-jwt', version: '1.0.9.RELEASE'
+    compile group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.3.2.RELEASE'
+    compile('org.springframework.boot:spring-boot-starter-security')
+    compile('org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:2.0.1.RELEASE')
+    compile('org.springframework.boot:spring-boot-starter-web')
+    compile('org.springframework.boot:spring-boot-starter-amqp')
+    compile('com.fasterxml.jackson.module:jackson-module-kotlin')
+    compile("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    compile("org.jetbrains.kotlin:kotlin-reflect")
+    compile 'com.graphql-java:graphql-spring-boot-starter:5.0.2'
+    compile 'com.graphql-java:graphiql-spring-boot-starter:5.0.2'
+    compile 'com.graphql-java:graphql-java-tools:5.2.3'
+    compile 'com.graphql-java:graphql-java-servlet:6.1.2'
+    compile('io.jsonwebtoken:jjwt:0.9.0')
+    compile('org.springframework.cloud:spring-cloud-starter-openfeign:2.0.1.RELEASE')
+    compile('com.netflix.feign:feign-jackson:8.18.0')
+
+    runtime('org.postgresql:postgresql')
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
